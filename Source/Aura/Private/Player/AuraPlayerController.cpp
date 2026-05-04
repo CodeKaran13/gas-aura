@@ -14,7 +14,7 @@ AAuraPlayerController::AAuraPlayerController()
 void AAuraPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+
 	CursorTrace();
 }
 
@@ -25,8 +25,10 @@ void AAuraPlayerController::BeginPlay()
 	check(AuraContext);
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(Subsystem);
-	Subsystem->AddMappingContext(AuraContext, 0);
+	if (Subsystem)
+	{
+		Subsystem->AddMappingContext(AuraContext, 0);
+	}
 
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
@@ -51,10 +53,10 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 	const FRotator Rotation = GetControlRotation();
 	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
-	
+
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-	
+
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
@@ -67,10 +69,10 @@ void AAuraPlayerController::CursorTrace()
 	FHitResult Hit;
 	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
 	if (!Hit.bBlockingHit) return;
-	
+
 	LastActor = ThisActor;
 	ThisActor = Hit.GetActor();
-	
+
 	/** 
 	 * Line trace from cursor. There are several scenarios:
 	 *	A. LastActor is null && ThisActor is null
@@ -84,7 +86,7 @@ void AAuraPlayerController::CursorTrace()
 	 *	E. Both actors are valid, and are the same actor
 	 *		- Do nothing
 	 */
-	
+
 	if (!LastActor)
 	{
 		if (ThisActor)
